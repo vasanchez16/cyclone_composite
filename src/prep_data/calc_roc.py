@@ -57,7 +57,5 @@ def get_dmslp(
         Change in sea level pressure between two consecutive points.
     """
 
-    
-
 
     return None
