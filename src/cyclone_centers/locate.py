@@ -46,6 +46,17 @@ def get_roc_on_full_grid(
 ) -> tuple:
     
     """
+    Calculate the first and second order rate of change of sea level pressure (mslp) on a full grid.
+
+    Returns:
+    x_1roc: np.ndarray
+        First order rate of change in the x-direction (longitude).
+    y_1roc: np.ndarray
+        First order rate of change in the y-direction (latitude).
+    x_2roc: np.ndarray
+        Second order rate of change in the x-direction (longitude).
+    y_2roc: np.ndarray
+        Second order rate of change in the y-direction (latitude).    
     """
 
     interp_method = 'linear'
