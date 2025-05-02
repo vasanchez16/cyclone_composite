@@ -175,7 +175,7 @@ def find_candidate_points(
     limits: tuple
         Tuple containing the maximum and minimum limits for the first and second order rate of change.
     Returns:
-    cyclone_centers: np.ndarray
+    candidate_points: np.ndarray
         Boolean array indicating the locations of candidate cyclone centers.
     """
     # limits from Field et al. (2007)
@@ -190,9 +190,9 @@ def find_candidate_points(
     roc2_sum = x_2roc + y_2roc
     roc2_bools = roc2_sum > min_2roc
 
-    cyclone_centers = roc1_bools * roc2_bools
+    candidate_points = roc1_bools * roc2_bools
 
-    return cyclone_centers
+    return candidate_points
 
 def haversine(
         coord1: tuple,
@@ -232,3 +232,54 @@ def haversine(
     distance = R * c  # Distance in kilometers
     
     return distance
+
+def find_centers(
+    candidate_points: np.ndarray,
+    latitude_arr: np.ndarray,
+    longitude_arr: np.ndarray,
+    mslp_arr: np.ndarray,
+    pressure_max: float = 1000.0,
+    distance_max: float = 100.0
+) -> np.ndarray:
+    """
+    Find the cyclone centers by identifying the maximum negative pressure anonmalies satisfying the conditions in Field et al. 2007.
+    Arguments:
+    candidate_points: np.ndarray
+        Boolean array indicating the locations of candidate cyclone centers.
+    latitude_arr: np.ndarray
+        Array of latitude values.
+    longitude_arr: np.ndarray
+        Array of longitude values.
+    mslp_arr: np.ndarray
+        Array of sea level pressure values. Units should be in hPa.
+    pressure_max: float
+        Maximum sea level pressure value to consider for cyclone centers.
+    distance_max: float
+        Maximum distance in kilometers to consider for cyclone centers.
+    Returns:
+    centers: np.ndarray
+        Boolean array indicating the locations of cyclone centers.
+    """
+
+    lons_grid, lats_grid = np.meshgrid(longitude_arr, latitude_arr)
+    lats_grid = lats_grid.flatten()
+    lons_grid = lons_grid.flatten()
+
+    candidate_points_lats = lats_grid[candidate_points.flatten()]
+    candidate_points_lons = lons_grid[candidate_points.flatten()]
+
+
+    centers = []
+    for lat, lon in zip(candidate_points_lats, candidate_points_lons):
+        temp_msl = mslp_arr.copy()
+
+        dists = haversine((lat, lon), (lats_grid, lons_grid))
+        dists = np.reshape(dists, (latitude_arr.shape[0], longitude_arr.shape[0]))
+        bool_arr = (temp_msl < pressure_max) & (dists < distance_max) & (candidate_points)
+        temp_msl[~bool_arr] = np.nan
+
+        centers.append(temp_msl == np.nanmin(temp_msl))
+    centers = np.array(centers)    
+    centers = np.any(centers, axis=0)
+
+    return centers
