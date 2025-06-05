@@ -38,15 +38,21 @@ def get_centers(
     for lat, lon in zip(candidate_points_lats, candidate_points_lons):
         temp_msl = press_data.copy()
 
-        over_land = globe.is_land(lat, lon)
-
         dists = haversine((lat, lon), (lats_grid, lons_grid))
         dists = np.reshape(dists, (latitude_arr.shape[0], longitude_arr.shape[0]))
-        bool_arr = (temp_msl < pressure_max) & (dists < 2000) & (center_candidate_points) & (~over_land)
+        bool_arr = (temp_msl < pressure_max) & (dists < 2000) & (center_candidate_points)
         temp_msl[~bool_arr] = np.nan
 
         centers.append(temp_msl == np.nanmin(temp_msl))
     centers = np.array(centers)    
     centers = np.any(centers, axis=0)
+
+
+    # check if each center is over land
+    centers = np.array(centers, dtype=bool)
+    land_check = globe.is_land(lats_grid, lons_grid)
+    land_check = np.reshape(land_check, centers.shape)
+
+    centers = np.logical_and(centers, ~land_check)
 
     return centers, lats_grid, lons_grid
