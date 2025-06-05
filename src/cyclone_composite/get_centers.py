@@ -46,4 +46,4 @@ def get_centers(
     centers = np.array(centers)    
     centers = np.any(centers, axis=0)
 
-    return centers
+    return centers, lats_grid, lons_grid
