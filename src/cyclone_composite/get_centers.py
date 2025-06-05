@@ -3,6 +3,7 @@ from .rate_of_change import get_dx, get_dy, first_order_rate_of_change, get_roc_
 from .utils import get_coord_midpoints, haversine
 
 import numpy as np
+from global_land_mask import globe
 
 def get_centers(
     press_data,
@@ -37,9 +38,11 @@ def get_centers(
     for lat, lon in zip(candidate_points_lats, candidate_points_lons):
         temp_msl = press_data.copy()
 
+        over_land = globe.is_land(lat, lon)
+
         dists = haversine((lat, lon), (lats_grid, lons_grid))
         dists = np.reshape(dists, (latitude_arr.shape[0], longitude_arr.shape[0]))
-        bool_arr = (temp_msl < pressure_max) & (dists < 2000) & (center_candidate_points)
+        bool_arr = (temp_msl < pressure_max) & (dists < 2000) & (center_candidate_points) & (~over_land)
         temp_msl[~bool_arr] = np.nan
 
         centers.append(temp_msl == np.nanmin(temp_msl))
