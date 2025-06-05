@@ -238,8 +238,8 @@ def find_centers(
     latitude_arr: np.ndarray,
     longitude_arr: np.ndarray,
     mslp_arr: np.ndarray,
-    pressure_max: float = 1000.0,
-    distance_max: float = 100.0
+    pressure_max: float = 1015,
+    distance_max: float = 2000
 ) -> np.ndarray:
     """
     Find the cyclone centers by identifying the maximum negative pressure anonmalies satisfying the conditions in Field et al. 2007.
@@ -253,7 +253,7 @@ def find_centers(
     mslp_arr: np.ndarray
         Array of sea level pressure values. Units should be in hPa.
     pressure_max: float
-        Maximum sea level pressure value to consider for cyclone centers.
+        Maximum sea level pressure value to consider for cyclone centers. Units should be in hPa.
     distance_max: float
         Maximum distance in kilometers to consider for cyclone centers.
     Returns:
